@@ -55,8 +55,12 @@
 ## 文件结构
 
 ```
-index.html      全部内容：内联 CSS、原生 JS、评分与渲染逻辑
-README.md       本文件
+index.html            全部内容：内联 CSS、原生 JS、评分与渲染逻辑
+README.md             本文件
+CHANGELOG.md          三次返工的记录
+docs/评分模型.md       公式、权重与门槛的完整说明
+docs/字段口径.md       通知原文到字段的对照
+.gitignore            忽略规则
 ```
 
 `index.html` 内部按职责分为三层：UI（视图渲染与事件）、CORE（评分、时间判定、归一化）、DATA（localStorage 读写与导入导出）。
