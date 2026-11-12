@@ -1,0 +1,1871 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>校园委托板 · Campus Quest Board</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%230c1210'/%3E%3Crect x='5' y='7' width='22' height='18' fill='%23efe7d5'/%3E%3Crect x='5' y='7' width='22' height='2.4' fill='%23cd9a3d'/%3E%3Crect x='8' y='13' width='12' height='1.6' fill='%2322201a'/%3E%3Crect x='8' y='17' width='16' height='1.6' fill='%238a8271'/%3E%3Ccircle cx='23' cy='21' r='3' fill='%23a63a2a'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://miaoda.feishu.cn">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* ================= 设计令牌 ================= */
+:root{
+  --ink:#0c1210;
+  --ink-2:#111815;
+  --ink-3:#17201c;
+  --line:#28332d;
+  --line-soft:#1e2823;
+  --paper:#efe7d5;
+  --paper-2:#e5dbc5;
+  --paper-3:#d8cdb4;
+  --pink:#241f18;
+  --pmuted:#6e6653;
+  --copper:#cd9a3d;
+  --copper-2:#e0b45e;
+  --copper-dim:#8a6a2c;
+  --seal:#a63a2a;
+  --sage:#5b8a6e;
+  --text:#e9e3d5;
+  --text-dim:#98a29b;
+  --text-mute:#67736c;
+  --mono:'IBM Plex Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;
+  --serif:'Noto Serif SC','Songti SC',SimSun,serif;
+  --sans:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
+  --r:3px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--sans);
+  background:var(--ink);
+  color:var(--text);
+  font-size:14px;
+  line-height:1.6;
+  min-height:100vh;
+  background-image:
+    radial-gradient(900px 420px at 18% -8%,rgba(205,154,61,.09),transparent 62%),
+    radial-gradient(760px 500px at 92% 6%,rgba(91,138,110,.10),transparent 60%),
+    repeating-linear-gradient(0deg,transparent 0 47px,rgba(255,255,255,.018) 47px 48px),
+    repeating-linear-gradient(90deg,transparent 0 47px,rgba(255,255,255,.018) 47px 48px);
+  background-attachment:fixed;
+}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;font-size:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:700;line-height:1.3}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+::selection{background:var(--copper);color:#151109}
+:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+
+/* ================= 顶栏 ================= */
+.topbar{
+  position:sticky;top:0;z-index:60;
+  display:flex;align-items:center;gap:22px;
+  padding:0 26px;height:70px;
+  background:rgba(12,18,16,.92);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:12px;flex:none}
+.brand-mark{
+  width:38px;height:38px;flex:none;
+  display:grid;place-items:center;
+  border:1px solid var(--copper-dim);
+  background:linear-gradient(160deg,rgba(205,154,61,.13),rgba(205,154,61,.02));
+}
+.brand-mark svg{width:22px;height:22px}
+.brand-text h1{font-size:19px;letter-spacing:.06em;font-weight:900}
+.brand-text span{
+  display:block;font-family:var(--mono);font-size:9.5px;
+  letter-spacing:.26em;color:var(--text-mute);margin-top:-2px;
+}
+.tabs{display:flex;align-items:center;gap:2px;margin-left:6px}
+.tab{
+  position:relative;padding:8px 15px;font-size:13px;color:var(--text-dim);
+  letter-spacing:.04em;transition:color .18s;
+}
+.tab:hover{color:var(--text)}
+.tab.is-on{color:var(--paper);font-weight:500}
+.tab.is-on::after{
+  content:"";position:absolute;left:13px;right:13px;bottom:-1px;height:2px;
+  background:var(--copper);
+}
+.tab .badge-n{
+  display:inline-block;min-width:16px;padding:0 4px;margin-left:5px;
+  font-family:var(--mono);font-size:10px;line-height:15px;text-align:center;
+  color:var(--copper-2);border:1px solid rgba(205,154,61,.45);vertical-align:1px;
+}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:16px}
+.energy{display:flex;align-items:center;gap:9px;padding-right:16px;border-right:1px solid var(--line)}
+.energy-label{font-size:11px;color:var(--text-mute);letter-spacing:.08em}
+.energy-bar{width:78px;height:5px;background:var(--ink-3);border-radius:0;overflow:hidden;position:relative}
+.energy-fill{height:100%;background:linear-gradient(90deg,var(--copper-dim),var(--copper-2));transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.energy-num{font-family:var(--mono);font-size:12px;color:var(--copper-2);min-width:26px}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:9px 16px;background:var(--copper);color:#1a1408;
+  font-size:13px;font-weight:500;letter-spacing:.05em;
+  border-radius:var(--r);
+  transition:background .18s,transform .18s;
+}
+.btn-primary:hover{background:var(--copper-2);transform:translateY(-1px)}
+.btn-primary svg{width:13px;height:13px}
+.btn-ghost{
+  padding:8px 13px;border:1px solid var(--line);
+  color:var(--text-dim);font-size:12.5px;border-radius:var(--r);
+  transition:border-color .18s,color .18s;
+}
+.btn-ghost:hover{border-color:var(--copper-dim);color:var(--paper)}
+
+/* ================= 通用面板 ================= */
+main{padding:26px 26px 70px;max-width:1560px;margin:0 auto}
+.view{display:none;animation:fade .32s ease}
+.view.is-on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.panel{
+  background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.012));
+  border:1px solid var(--line-soft);
+  border-radius:var(--r);
+  padding:16px 18px;
+}
+.panel + .panel{margin-top:12px}
+.panel-h{
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:11px;letter-spacing:.16em;color:var(--text-mute);
+  text-transform:uppercase;margin-bottom:12px;
+}
+.panel-h b{font-family:var(--mono);color:var(--copper);letter-spacing:.06em;font-weight:500}
+.sect-title{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+.sect-title h2{font-size:22px;letter-spacing:.02em}
+.sect-title p{color:var(--text-mute);font-size:12.5px;margin-top:3px}
+</style>
+<style>
+/* ================= 委托板布局 ================= */
+.board-wrap{display:grid;grid-template-columns:268px minmax(0,1fr);gap:22px;align-items:start}
+.filters{position:sticky;top:92px}
+.stat-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);border-radius:var(--r);overflow:hidden;margin-bottom:12px}
+.stat-cell{background:var(--ink-2);padding:12px 8px;text-align:center}
+.stat-cell b{display:block;font-family:var(--mono);font-size:21px;color:var(--copper-2);font-weight:500;line-height:1.2}
+.stat-cell span{font-size:10.5px;color:var(--text-mute);letter-spacing:.06em}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px}
+.chip{
+  padding:5px 10px;font-size:12px;border:1px solid var(--line);
+  color:var(--text-dim);border-radius:var(--r);transition:.18s;
+  background:rgba(255,255,255,.015);
+}
+.chip:hover{border-color:var(--copper-dim);color:var(--paper)}
+.chip.is-on{background:rgba(205,154,61,.16);border-color:var(--copper-dim);color:var(--copper-2)}
+.field-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--line-soft);font-size:12.5px;color:var(--text-dim)}
+.field-row:last-child{border-bottom:0;padding-bottom:2px}
+.switch{position:relative;width:34px;height:18px;background:var(--ink-3);border:1px solid var(--line);border-radius:2px;flex:none}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:13px;height:12px;background:var(--text-mute);transition:.2s}
+.switch.is-on{background:rgba(205,154,61,.22);border-color:var(--copper-dim)}
+.switch.is-on::after{left:17px;background:var(--copper-2)}
+.legend-note{font-size:11.5px;color:var(--text-mute);line-height:1.75}
+.legend-note b{color:var(--copper);font-weight:500}
+
+/* ---------- 委托卡 ---------- */
+.quest-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(342px,1fr));gap:16px}
+.quest{
+  position:relative;
+  background:var(--paper);
+  color:var(--pink);
+  border-radius:var(--r);
+  padding:0 0 0;
+  box-shadow:0 16px 28px -20px rgba(0,0,0,.95),0 1px 0 rgba(255,255,255,.55) inset;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s;
+}
+.quest:hover{transform:translateY(-3px);box-shadow:0 24px 34px -22px rgba(0,0,0,.95)}
+.quest::before{
+  content:"";height:3px;flex:none;
+  background:linear-gradient(90deg,var(--copper) 0%,var(--copper) 34%,var(--copper-dim) 34%,var(--copper-dim) 100%);
+}
+.quest.is-conflict::before{background:var(--seal)}
+.quest.is-taken::before{background:var(--sage)}
+.q-head{display:flex;align-items:flex-start;gap:8px;padding:13px 16px 0}
+.q-type{
+  font-size:10.5px;letter-spacing:.1em;padding:3px 8px;border-radius:2px;
+  background:rgba(36,31,24,.09);color:#4b4231;font-weight:500;white-space:nowrap;
+}
+.q-no{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--pmuted);letter-spacing:.08em;white-space:nowrap}
+.q-title{font-family:var(--serif);font-size:17.5px;font-weight:700;line-height:1.35;padding:8px 16px 0;letter-spacing:-.005em}
+.q-host{font-size:11.5px;color:var(--pmuted);padding:3px 16px 0}
+.q-meta{display:flex;flex-wrap:wrap;gap:5px 14px;padding:11px 16px 0;font-size:11.5px;color:#4d4636}
+.q-meta span{display:inline-flex;align-items:center;gap:5px}
+.q-meta .k{font-family:var(--mono);color:var(--pmuted);font-size:10.5px}
+.q-rewards{
+  display:flex;flex-wrap:wrap;gap:5px;
+  padding:11px 16px 0;
+}
+.rw{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:11px;padding:3px 7px;border-radius:2px;
+  background:rgba(205,154,61,.22);color:#6b4d12;font-weight:500;
+  border:1px solid rgba(160,115,30,.28);
+}
+.rw.pu{background:rgba(166,58,42,.15);color:#8a3226;border-color:rgba(166,58,42,.3)}
+.rw.hr{background:rgba(91,138,110,.2);color:#2f5842;border-color:rgba(70,110,86,.32)}
+.q-reqs{display:flex;flex-wrap:wrap;gap:5px;padding:8px 16px 0}
+.rq{font-size:10.5px;color:#6a6252;padding:2px 6px;border:1px dashed rgba(110,102,83,.45);border-radius:2px}
+.rq.warn{color:#8a3226;border-color:rgba(166,58,42,.4)}
+.q-mid{flex:1}
+.q-foot{
+  margin-top:13px;padding:11px 16px 13px;
+  background:linear-gradient(180deg,rgba(36,31,24,.045),rgba(36,31,24,.07));
+  border-top:1px solid rgba(110,102,83,.22);
+  display:flex;align-items:center;gap:14px;
+}
+.q-score{display:flex;align-items:baseline;gap:4px;flex:none}
+.q-score b{font-family:var(--mono);font-size:27px;font-weight:600;line-height:1;color:#2f2a20}
+.q-score span{font-size:10px;color:var(--pmuted);letter-spacing:.06em}
+.q-verdict{flex:1;min-width:0}
+.q-verdict .v{font-size:12px;font-weight:500;letter-spacing:.02em}
+.q-verdict .v .dot{display:inline-block;width:5px;height:5px;border-radius:50%;margin-right:5px;vertical-align:2px}
+.q-bars{display:flex;gap:3px;margin-top:5px}
+.q-bars i{display:block;height:3px;flex:1;background:rgba(36,31,24,.15)}
+.q-bars i.on{background:var(--copper-dim)}
+.q-act{display:flex;gap:6px;flex:none}
+.q-btn{
+  padding:6px 11px;font-size:11.5px;border:1px solid rgba(36,31,24,.3);border-radius:2px;color:#2f2a20;
+  transition:.16s;white-space:nowrap;
+}
+.q-btn:hover{background:rgba(36,31,24,.08)}
+.q-btn.solid{background:#221e17;color:var(--paper);border-color:#221e17}
+.q-btn.solid:hover{background:#3a342a}
+.q-btn.taken{border-color:rgba(91,138,110,.6);color:#2f5842;background:rgba(91,138,110,.12)}
+.q-detail{
+  display:none;
+  padding:0 16px 14px;border-top:1px solid rgba(110,102,83,.22);
+  background:rgba(238,229,209,.6);
+}
+.q-detail.is-open{display:block}
+.q-detail .why{list-style:none;padding:10px 0 0;display:grid;gap:5px}
+.q-detail .why li{display:flex;gap:7px;font-size:11.5px;line-height:1.55;color:#4a4334}
+.q-detail .why li .mk{font-family:var(--mono);flex:none;width:12px}
+.why .plus .mk{color:#3f6b51}
+.why .minus .mk{color:#9c3b2e}
+.dim-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(110,102,83,.2);margin-top:10px;border:1px solid rgba(110,102,83,.2)}
+.dim{background:#f2ebda;padding:7px 8px}
+.dim .dl{font-size:10px;color:var(--pmuted);letter-spacing:.04em}
+.dim .dv{font-family:var(--mono);font-size:15px;font-weight:500;color:#2f2a20}
+.dim .dv small{font-size:9px;color:var(--pmuted);font-weight:400}
+.stamp{
+  position:absolute;right:8px;top:36px;
+  width:62px;height:62px;border-radius:50%;
+  display:grid;place-items:center;text-align:center;
+  border:1.5px solid rgba(166,58,42,.45);
+  color:rgba(166,58,42,.55);font-family:var(--serif);font-size:11px;font-weight:700;
+  letter-spacing:.06em;line-height:1.15;
+  transform:rotate(-14deg);opacity:.55;pointer-events:none;
+  padding:4px;
+}
+.empty{
+  grid-column:1/-1;text-align:center;padding:56px 20px;border:1px dashed var(--line);
+  color:var(--text-mute);font-size:13px;border-radius:var(--r);
+}
+</style>
+<style>
+/* ================= 我的日程 ================= */
+.plan-wrap{display:grid;grid-template-columns:288px minmax(0,1fr);gap:22px;align-items:start}
+.day-budget{display:grid;gap:9px}
+.db-row{display:grid;grid-template-columns:34px 1fr 44px;align-items:center;gap:10px;font-size:11.5px}
+.db-row .dn{color:var(--text-dim);font-family:var(--mono);font-size:11px}
+.db-track{height:8px;background:var(--ink-3);position:relative;border:1px solid var(--line-soft)}
+.db-free{position:absolute;left:0;top:0;bottom:0;background:rgba(205,154,61,.28)}
+.db-used{position:absolute;top:0;bottom:0;background:var(--sage);opacity:.75}
+.db-row .dv{font-family:var(--mono);font-size:10.5px;color:var(--text-mute);text-align:right}
+.timeline{display:grid;gap:22px}
+.tl-day{
+  display:grid;grid-template-columns:62px minmax(0,1fr);gap:16px;
+  padding-bottom:14px;border-bottom:1px solid var(--line-soft);
+}
+.tl-day:last-child{border-bottom:0}
+.tl-date{position:relative;padding-top:2px}
+.tl-date .dw{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--copper);text-transform:uppercase}
+.tl-date .dd{font-family:var(--serif);font-size:24px;font-weight:700;line-height:1.1;margin-top:2px}
+.tl-date .ds{font-size:10px;color:var(--text-mute)}
+.tl-items{position:relative;display:grid;gap:8px;padding-left:16px}
+.tl-items::before{content:"";position:absolute;left:0;top:6px;bottom:6px;width:1px;background:var(--line)}
+.tl-item{
+  position:relative;display:grid;grid-template-columns:78px minmax(0,1fr);gap:12px;
+  padding:9px 12px;border:1px solid var(--line-soft);background:rgba(255,255,255,.02);
+  border-radius:var(--r);
+}
+.tl-item .dotnode{
+  position:absolute;left:-20px;top:17px;width:7px;height:7px;background:var(--copper);
+  border-radius:50%;box-shadow:0 0 0 3px rgba(205,154,61,.13);
+}
+.tl-item.is-done .dotnode{background:var(--sage);box-shadow:0 0 0 3px rgba(91,138,110,.15)}
+.tl-item.is-clash{border-color:rgba(166,58,42,.45);background:rgba(166,58,42,.05)}
+.tl-item.is-clash .dotnode{background:var(--seal);box-shadow:0 0 0 3px rgba(166,58,42,.16)}
+.tl-item .tm{font-family:var(--mono);font-size:11px;color:var(--text-dim);line-height:1.35}
+.tl-item .tt{font-size:13px;font-weight:500}
+.tl-item .tp{font-size:11px;color:var(--text-mute);margin-top:2px}
+.tl-empty{border:1px dashed var(--line);padding:16px;color:var(--text-mute);font-size:12.5px;text-align:center;border-radius:var(--r)}
+.tl-free{padding:10px 12px;font-size:11.5px;color:var(--text-mute);border-left:2px solid var(--line);margin-left:4px}
+
+/* ================= 性价比分析 ================= */
+.insight-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px}
+.chart-card{background:linear-gradient(180deg,rgba(255,255,255,.032),rgba(255,255,255,.008));border:1px solid var(--line-soft);border-radius:var(--r);padding:16px 18px 10px}
+.chart-card h3{font-size:14px;font-family:var(--sans);font-weight:500;letter-spacing:.04em;color:var(--text)}
+.chart-card .sub{font-size:11.5px;color:var(--text-mute);margin-top:3px;margin-bottom:6px}
+.chart-body{width:100%;height:280px}
+.chart-body.tall{height:314px}
+.rank-list{display:grid;gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);margin-top:2px}
+.rank-row{background:var(--ink-2);display:grid;grid-template-columns:26px minmax(0,1fr) 52px;gap:10px;align-items:center;padding:9px 11px}
+.rank-row .rk{font-family:var(--mono);font-size:12px;color:var(--copper);text-align:center}
+.rank-row .rt{font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank-row .rt small{display:block;color:var(--text-mute);font-size:10.5px;font-weight:400}
+.rank-row .rv{font-family:var(--mono);font-size:14px;text-align:right;color:var(--paper)}
+.rank-row .rv small{font-size:9px;color:var(--text-mute)}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.kpi{border:1px solid var(--line-soft);border-radius:var(--r);padding:13px 15px;background:rgba(255,255,255,.02)}
+.kpi .k{font-size:10.5px;letter-spacing:.12em;color:var(--text-mute)}
+.kpi .v{font-family:var(--mono);font-size:26px;color:var(--copper-2);line-height:1.2;margin-top:4px}
+.kpi .v small{font-size:10.5px;color:var(--text-mute);margin-left:3px}
+
+/* ================= 个人档案 ================= */
+.profile-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid.three{grid-template-columns:repeat(3,1fr)}
+.fld{display:block}
+.fld > label,.fld > .lab{display:block;font-size:11px;letter-spacing:.06em;color:var(--text-mute);margin-bottom:5px}
+.inp{
+  width:100%;padding:8px 10px;background:var(--ink-3);border:1px solid var(--line);
+  border-radius:2px;color:var(--text);font-size:12.5px;transition:border-color .16s;
+}
+.inp:focus{border-color:var(--copper-dim)}
+select.inp{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--text-mute) 50%),linear-gradient(135deg,var(--text-mute) 50%,transparent 50%);background-position:calc(100% - 14px) 15px,calc(100% - 9px) 15px;background-size:5px 5px;background-repeat:no-repeat;padding-right:26px}
+.slot-grid{display:grid;grid-template-columns:52px repeat(3,1fr);gap:5px;align-items:center}
+.slot-grid .sg-h{font-size:10.5px;color:var(--text-mute);text-align:center;letter-spacing:.04em}
+.slot-grid .sg-d{font-family:var(--mono);font-size:11px;color:var(--text-dim)}
+.slot{
+  height:30px;border:1px solid var(--line);background:var(--ink-3);border-radius:2px;
+  display:grid;place-items:center;font-size:10px;color:var(--text-mute);transition:.15s;
+  user-select:none;
+}
+.slot:hover{border-color:var(--copper-dim)}
+.slot.is-on{background:rgba(205,154,61,.2);border-color:var(--copper-dim);color:var(--copper-2)}
+.slot.is-occ{background:rgba(91,138,110,.18);border-color:rgba(91,138,110,.5);color:#9cc4ab;font-size:9.5px}
+.pu-editor{display:grid;gap:8px}
+.pu-row{display:grid;grid-template-columns:52px 1fr 104px;gap:10px;align-items:center;font-size:12px}
+.pu-row .pt{color:var(--text-dim)}
+.pu-track{height:6px;background:var(--ink-3);position:relative;border:1px solid var(--line-soft)}
+.pu-track .fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--copper-dim),var(--copper-2))}
+.pu-track .goal{position:absolute;top:-3px;bottom:-3px;width:1px;background:var(--text-mute)}
+.pu-row .pv{font-family:var(--mono);font-size:10.5px;color:var(--text-mute);text-align:right}
+.zone-rows{display:grid;gap:6px}
+.zone-row{display:grid;grid-template-columns:74px 1fr 52px;gap:8px;align-items:center;font-size:11.5px;color:var(--text-dim)}
+.zone-row .inp{padding:5px 8px;font-size:11.5px}
+.pref-cloud{display:flex;flex-wrap:wrap;gap:6px}
+
+/* ================= 弹窗 / 提示 ================= */
+.modal-mask{
+  position:fixed;inset:0;z-index:90;display:none;
+  background:rgba(6,9,8,.78);backdrop-filter:blur(4px);
+  padding:40px 18px;overflow:auto;
+}
+.modal-mask.is-on{display:block}
+.modal{
+  max-width:760px;margin:0 auto;background:var(--ink-2);
+  border:1px solid var(--line);border-radius:4px;
+  box-shadow:0 40px 80px -30px #000;
+  animation:pop .26s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.99)}to{opacity:1;transform:none}}
+.modal-h{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line-soft)}
+.modal-h h3{font-size:16px;flex:1}
+.modal-h .x{font-family:var(--mono);font-size:16px;color:var(--text-mute);padding:2px 6px}
+.modal-h .x:hover{color:var(--paper)}
+.modal-b{padding:18px 20px 6px}
+.modal-f{padding:14px 20px 18px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--line-soft)}
+.tabs-sm{display:flex;gap:2px;margin-bottom:16px;border-bottom:1px solid var(--line-soft)}
+.tabs-sm button{padding:7px 12px;font-size:12px;color:var(--text-mute);position:relative}
+.tabs-sm button.is-on{color:var(--copper-2)}
+.tabs-sm button.is-on::after{content:"";position:absolute;left:6px;right:6px;bottom:-1px;height:2px;background:var(--copper)}
+.modal-sec{margin-bottom:14px}
+.modal-sec .cap{font-size:10.5px;letter-spacing:.14em;color:var(--copper-dim);margin-bottom:8px}
+textarea.inp{resize:vertical;min-height:120px;line-height:1.7;font-family:var(--mono);font-size:11.5px}
+#toast{
+  position:fixed;left:50%;bottom:34px;transform:translate(-50%,20px);z-index:120;
+  background:var(--paper);color:#241f18;padding:11px 20px;font-size:12.5px;
+  border-radius:3px;box-shadow:0 18px 40px -16px rgba(0,0,0,.9);
+  opacity:0;pointer-events:none;transition:.28s;max-width:86vw;
+}
+#toast.is-on{opacity:1;transform:translate(-50%,0)}
+#toast .bar{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--copper)}
+.data-note{font-size:10.5px;color:var(--text-mute);line-height:1.7;margin-top:10px}
+.tool-line{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+
+/* ================= 响应式 ================= */
+@media (max-width:1180px){
+  .board-wrap,.plan-wrap{grid-template-columns:1fr}
+  .filters{position:static;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0 12px;align-items:start}
+  .filters > .stat-strip{grid-column:1/-1}
+  .filters > .panel + .panel{margin-top:0}
+  .insight-grid{grid-template-columns:1fr}
+  .profile-wrap{grid-template-columns:1fr}
+}
+@media (max-width:860px){
+  .topbar{height:auto;flex-wrap:wrap;padding:10px 16px;gap:10px 14px}
+  .brand-text h1{font-size:17px}
+  .tabs{order:3;width:100%;overflow-x:auto;margin-left:0;padding-bottom:2px;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{padding:7px 11px;white-space:nowrap}
+  .top-right{margin-left:auto;gap:10px}
+  .energy{padding-right:10px}
+  .energy-bar{width:52px}
+  .btn-primary{padding:8px 12px;font-size:12px}
+  main{padding:18px 16px 56px}
+  .quest-list{grid-template-columns:1fr}
+  .q-meta{gap:4px 10px}
+  .kpi-row{grid-template-columns:1fr 1fr}
+  .form-grid,.form-grid.three{grid-template-columns:1fr}
+  .tl-day{grid-template-columns:48px minmax(0,1fr);gap:10px}
+  .tl-item{grid-template-columns:1fr;gap:4px}
+  .sect-title h2{font-size:19px}
+  .q-detail .dim-grid{grid-template-columns:1fr 1fr}
+  .stamp{width:46px;height:46px;font-size:9.5px}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#cd9a3d" stroke-width="1.4">
+        <rect x="3.5" y="2.5" width="17" height="19" rx="1"/><path d="M3.5 6.2h17"/>
+        <path d="M7 10h7M7 13.5h10M7 17h5" stroke="#8a6a2c"/>
+      </svg>
+    </div>
+    <div class="brand-text">
+      <h1>校园委托板</h1>
+      <span>CAMPUS QUEST BOARD</span>
+    </div>
+  </div>
+  <nav class="tabs">
+    <a class="tab is-on" data-nav="board" href="#board">委托板<span class="badge-n" id="tabCount">0</span></a>
+    <a class="tab" data-nav="plan" href="#plan">我的日程<span class="badge-n" id="tabTaken">0</span></a>
+    <a class="tab" data-nav="insight" href="#insight">性价比分析</a>
+    <a class="tab" data-nav="profile" href="#profile">个人档案</a>
+  </nav>
+  <div class="top-right">
+    <div class="energy" title="按已接委托的体力难度折算的剩余精力">
+      <span class="energy-label">剩余精力</span>
+      <div class="energy-bar"><div class="energy-fill" id="energyFill" style="width:100%"></div></div>
+      <span class="energy-num mono" id="energyNum">100</span>
+    </div>
+    <button class="btn-primary" id="btnNewQuest">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+      收录新委托
+    </button>
+  </div>
+</div>
+<main>
+<!-- ===== 视图：委托板 ===== -->
+<section class="view is-on" id="view-board">
+  <div class="sect-title">
+    <div>
+      <h2>本周悬赏公告</h2>
+      <p id="boardSub">按你的空档、诉求与通勤距离评估每一单的性价比</p>
+    </div>
+    <div class="mono" style="font-size:11.5px;color:var(--text-mute)" id="boardRange"></div>
+  </div>
+  <div class="board-wrap">
+    <aside class="filters">
+      <div class="stat-strip">
+        <div class="stat-cell"><b id="statOpen">0</b><span>可接</span></div>
+        <div class="stat-cell"><b id="statGood">0</b><span>值得抢</span></div>
+        <div class="stat-cell"><b id="statUrgent">0</b><span>今日截止</span></div>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><span>委托类型</span><b id="filterTypeLabel">全部</b></div>
+        <div class="chip-row" id="typeChips"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><span>筛选条件</span><b>FILTER</b></div>
+        <div class="field-row"><span>只看不冲突的</span><div class="switch" data-toggle="freeOnly"></div></div>
+        <div class="field-row"><span>只看补缺学分的</span><div class="switch" data-toggle="gapOnly"></div></div>
+        <div class="field-row"><span>只看本校区 / 线上</span><div class="switch" data-toggle="nearOnly"></div></div>
+        <div class="field-row"><span>排序方式</span>
+          <select id="sortSel" style="background:var(--ink-3);border:1px solid var(--line);color:var(--text-dim);padding:3px 6px;font-size:12px;border-radius:2px">
+            <option value="value">性价比优先</option>
+            <option value="time">时间靠前</option>
+            <option value="reward">奖赏最高</option>
+            <option value="ease">难度最低</option>
+          </select>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><span>评分口径</span><b>MODEL</b></div>
+        <p class="legend-note">
+          总分 = <b>收益 40%</b> + 诉求匹配 25% + 时间成本 25% + 名额宽松 10%。<br>
+          收益按你「最缺的学分类型」加权，志愿时长、证书、物资分别折点；成本含往返通勤与提前培训；难度（面试、久站、早起、连续多日）折算成等效小时。
+        </p>
+      </div>
+    </aside>
+    <div id="questList" class="quest-list"></div>
+  </div>
+</section>
+<!-- ===== 视图：我的日程 ===== -->
+<section class="view" id="view-plan">
+  <div class="sect-title">
+    <div>
+      <h2>我的日程与空档</h2>
+      <p>已接委托会占用时段，撞车与超出日投入上限的会在下方标红</p>
+    </div>
+    <div class="tool-line" style="margin-top:0">
+      <button class="btn-ghost" id="btnClearPlan">清空已接委托</button>
+    </div>
+  </div>
+  <div class="plan-wrap">
+    <aside>
+      <div class="panel">
+        <div class="panel-h"><span>本周空档预算</span><b id="budgetTotal">0h</b></div>
+        <div class="day-budget" id="dayBudget"></div>
+        <p class="data-note">浅铜色为你勾选的空档，绿色为已被委托占用的小时。超出日投入上限的日子会以红字提示。</p>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><span>精力与负荷</span><b id="loadLabel">LOAD</b></div>
+        <div class="field-row"><span>本周可用精力</span><b class="mono" id="planEnergy">100</b></div>
+        <div class="field-row"><span>已接委托数</span><b class="mono" id="planTaken">0</b></div>
+        <div class="field-row"><span>累计志愿时长</span><b class="mono" id="planHours">0h</b></div>
+        <div class="field-row"><span>累计 PU 加分</span><b class="mono" id="planPu">0</b></div>
+      </div>
+    </aside>
+    <div class="timeline" id="timeline"></div>
+  </div>
+</section>
+
+<!-- ===== 视图：性价比分析 ===== -->
+<section class="view" id="view-insight">
+  <div class="sect-title">
+    <div>
+      <h2>性价比分析</h2>
+      <p>成本、收益与空档放在同一坐标系里看，避免只盯着 PU 分做决策</p>
+    </div>
+    <div class="mono" style="font-size:11.5px;color:var(--text-mute)" id="insightNote"></div>
+  </div>
+  <div class="kpi-row" id="kpiRow"></div>
+  <div class="insight-grid">
+    <div class="chart-card">
+      <h3>每日空档与占用</h3>
+      <div class="sub">柱高为当日可支配小时，绿色为已接委托占用</div>
+      <div class="chart-body" id="chBudget"></div>
+    </div>
+    <div class="chart-card">
+      <h3>PU 学分缺口</h3>
+      <div class="sub">铜色为已修，竖线为你的目标值</div>
+      <div class="chart-body" id="chPu"></div>
+    </div>
+    <div class="chart-card">
+      <h3>性价比地图</h3>
+      <div class="sub">横轴总成本（小时），纵轴收益点，气泡越大综合分越高</div>
+      <div class="chart-body tall" id="chMap"></div>
+    </div>
+    <div class="chart-card">
+      <h3>本周性价比榜</h3>
+      <div class="sub">仅统计未冲突、且落在你空档内的委托</div>
+      <div class="rank-list" id="rankList"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 视图：个人档案 ===== -->
+<section class="view" id="view-profile">
+  <div class="sect-title">
+    <div>
+      <h2>个人档案</h2>
+      <p>这里每改一项，委托板的评分与排序都会立刻重算</p>
+    </div>
+    <div class="tool-line" style="margin-top:0">
+      <button class="btn-ghost" id="btnExport">导出数据</button>
+      <button class="btn-ghost" id="btnReset">恢复示例数据</button>
+    </div>
+  </div>
+  <div class="profile-wrap">
+    <div>
+      <div class="panel">
+        <div class="panel-h"><span>基础信息</span><b>IDENTITY</b></div>
+        <div class="form-grid">
+          <div class="fld"><label>称呼</label><input class="inp" id="pfName" placeholder="委托板上的署名"></div>
+          <div class="fld"><label>年级</label>
+            <select class="inp" id="pfGrade"><option>大一</option><option>大二</option><option>大三</option><option>大四</option><option>研究生</option></select>
+          </div>
+          <div class="fld"><label>专业</label><input class="inp" id="pfMajor" placeholder="如：计算机科学与技术"></div>
+          <div class="fld"><label>常驻区域（出发地）</label><select class="inp" id="pfZone"></select></div>
+          <div class="fld"><label>工作日单日可投入上限（小时）</label><input class="inp" id="pfLimit" type="number" min="0" max="14" step="0.5"></div>
+          <div class="fld"><label>周末单日可投入上限（小时）</label><input class="inp" id="pfLimitWeekend" type="number" min="0" max="16" step="0.5"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><span>通勤时间（从常驻区域出发，分钟）</span><b>TRAVEL</b></div>
+        <div class="zone-rows" id="zoneRows"></div>
+        <p class="data-note">往返通勤按两倍计入时间成本，步行、骑车、公交混合估一个中位数即可。</p>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><span>每周空档时间表</span><b>AVAILABILITY</b></div>
+        <div class="slot-grid" id="slotGrid"></div>
+        <p class="data-note">上午 08:00–12:00，下午 12:00–18:00，晚上 18:00–22:00。只有整段被勾选，落在该段的委托才算「在空档内」。</p>
+      </div>
+    </div>
+    <div>
+      <div class="panel">
+        <div class="panel-h"><span>诉求与取舍</span><b>INTENT</b></div>
+        <div class="fld">
+          <span class="lab">最缺的学分类型（选两个，权重 ×2.2）</span>
+          <div class="pref-cloud" id="needCloud"></div>
+        </div>
+        <div class="fld" style="margin-top:14px">
+          <span class="lab">当前优先考虑（可多选）</span>
+          <div class="pref-cloud" id="prefCloud"></div>
+        </div>
+        <div class="fld" style="margin-top:14px">
+          <span class="lab">这学期想达成的目标（一句话）</span>
+          <input class="inp" id="pfGoal" placeholder="如：12 月前把志愿类学分补满，顺便拿一张服务证明">
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><span>PU 第二课堂学分进度</span><b>PROGRESS</b></div>
+        <div class="pu-editor" id="puEditor"></div>
+        <p class="data-note">「已有」填写你已认定的学分，「目标」为你的毕业或综测要求，缺口会在分析页体现。</p>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><span>数据说明</span><b>NOTE</b></div>
+        <p class="data-note">
+          本页所有数据保存在本机浏览器（localStorage），不上传任何服务器。委托内容为演示样例，请以学校官方通知为准；评分是规则模型的估算，用于排序参考，不代表学校认定。
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="modal-mask" id="modalMask">
+  <div class="modal">
+    <div class="modal-h">
+      <h3>收录新委托</h3>
+      <button class="x" id="modalClose" aria-label="关闭">×</button>
+    </div>
+    <div class="modal-b">
+      <div class="tabs-sm">
+        <button class="is-on" data-mtab="single">单条录入</button>
+        <button data-mtab="bulk">批量粘贴</button>
+      </div>
+      <div id="mtab-single">
+        <div class="modal-sec">
+          <div class="cap">基本信息</div>
+          <div class="form-grid">
+            <div class="fld" style="grid-column:1/-1"><label>委托标题</label><input class="inp" id="qfTitle" placeholder="如：校运会检录志愿者"></div>
+            <div class="fld"><label>类型</label>
+              <select class="inp" id="qfType">
+                <option value="志愿">志愿</option><option value="讲座">讲座</option>
+                <option value="文体">文体</option><option value="竞赛">竞赛</option>
+                <option value="实践">实践</option><option value="线上志愿">线上志愿</option>
+              </select>
+            </div>
+            <div class="fld"><label>主办方</label><input class="inp" id="qfHost" placeholder="如：校团委 / 院学生会"></div>
+          </div>
+        </div>
+        <div class="modal-sec">
+          <div class="cap">时间与地点</div>
+          <div class="form-grid three">
+            <div class="fld"><label>日期</label><input class="inp" id="qfDate" type="date"></div>
+            <div class="fld"><label>开始</label><input class="inp" id="qfStart" type="time" value="09:00"></div>
+            <div class="fld"><label>结束</label><input class="inp" id="qfEnd" type="time" value="12:00"></div>
+            <div class="fld"><label>地点</label><input class="inp" id="qfPlace" placeholder="如：东区大礼堂"></div>
+            <div class="fld"><label>所属区域</label><select class="inp" id="qfZone"></select></div>
+            <div class="fld"><label>报名截止</label><input class="inp" id="qfDeadline" type="date"></div>
+          </div>
+        </div>
+        <div class="modal-sec">
+          <div class="cap">名额与奖赏</div>
+          <div class="form-grid three">
+            <div class="fld"><label>人数上限</label><input class="inp" id="qfQuota" type="number" min="1" value="20"></div>
+            <div class="fld"><label>已报名</label><input class="inp" id="qfEnrolled" type="number" min="0" value="0"></div>
+            <div class="fld"><label>志愿时长（小时）</label><input class="inp" id="qfHours" type="number" min="0" step="0.5" value="0"></div>
+            <div class="fld"><label>PU 学分</label><input class="inp" id="qfPu" type="number" min="0" step="0.1" value="0.2"></div>
+            <div class="fld"><label>PU 类别</label>
+              <select class="inp" id="qfPuType">
+                <option>思辨</option><option>志愿</option><option>体育</option><option>美育</option><option>劳动</option>
+              </select>
+            </div>
+            <div class="fld"><label>附加物资 / 说明</label><input class="inp" id="qfGoods" placeholder="如：餐补、纪念品、证书"></div>
+          </div>
+        </div>
+        <div class="modal-sec">
+          <div class="cap">参与要求</div>
+          <div class="form-grid">
+            <div class="fld"><span class="lab">需要面试</span><div class="switch" data-chk="interview"></div></div>
+            <div class="fld"><span class="lab">需要提前培训</span><div class="switch" data-chk="training"></div></div>
+            <div class="fld"><span class="lab">要求早起（8 点前到场）</span><div class="switch" data-chk="early"></div></div>
+            <div class="fld"><span class="lab">长时间站立 / 体力活</span><div class="switch" data-chk="physical"></div></div>
+            <div class="fld"><label>需要的技能或资质</label><input class="inp" id="qfSkill" placeholder="如：摄影、急救证、熟悉高中数理"></div>
+            <div class="fld"><label>连续参与天数</label><input class="inp" id="qfDays" type="number" min="1" value="1"></div>
+            <div class="fld"><label>着装 / 携带要求</label><input class="inp" id="qfDress" placeholder="如：深色长裤、自备水杯"></div>
+            <div class="fld"><label>限年级 / 限专业</label><input class="inp" id="qfLimitWho" placeholder="留空为不限"></div>
+          </div>
+        </div>
+        <div class="modal-sec">
+          <div class="cap">补充说明</div>
+          <textarea class="inp" id="qfNote" style="min-height:74px" placeholder="签到方式、是否可请假、名额紧张的坑、学长学姐的经验……"></textarea>
+        </div>
+      </div>
+      <div id="mtab-bulk" style="display:none">
+        <p class="data-note" style="margin-top:0;margin-bottom:10px">
+          一行一单，用竖线 <b style="color:var(--copper)">|</b> 分隔，顺序如下（后 6 项可留空）：<br>
+          日期 | 开始 | 结束 | 标题 | 类型 | 地点 | 区域 | 人数上限 | 已报名 | 志愿时长 | PU分 | PU类别 | 奖赏 | 要求关键词（逗号分隔：面试,培训,早起,久站,体力）<br>
+          例：<span class="mono">2026-11-14 | 14:00 | 17:00 | 图书馆导架 | 实践 | 西区图书馆 | 西区 | 15 | 6 | 3 | 0.2 | 劳动 | 纪念品 | 体力</span>
+        </p>
+        <textarea class="inp" id="bulkText" placeholder="2026-11-14 | 14:00 | 17:00 | 图书馆导架 | 实践 | 西区图书馆 | 西区 | 15 | 6 | 3 | 0.2 | 劳动 | 纪念品 | 体力"></textarea>
+      </div>
+    </div>
+    <div class="modal-f">
+      <button class="btn-ghost" id="modalCancel">取消</button>
+      <button class="btn-primary" id="modalSave">收录</button>
+    </div>
+  </div>
+</div>
+<div id="toast"><span class="bar"></span><span id="toastText"></span></div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<script>
+(function(){
+'use strict';
+
+/* ================= 常量 ================= */
+var STORE_KEY = 'campus-quest-board.v1';
+var DAY_MS = 86400000;
+var ZONES = ['东区','西区','南校区','市区','线上'];
+var PU_TYPES = ['思辨','志愿','体育','美育','劳动'];
+var TYPES = ['志愿','讲座','文体','竞赛','实践','线上志愿'];
+var SEGS = [
+  {key:'am', label:'上午', from:480, to:720},
+  {key:'pm', label:'下午', from:720, to:1080},
+  {key:'ev', label:'晚上', from:1080, to:1320}
+];
+var WEEK = ['周日','周一','周二','周三','周四','周五','周六'];
+var PREFS = ['证书优先','收益优先','就近优先','轻松优先','社交优先'];
+
+function pad(n){ return n < 10 ? '0' + n : '' + n; }
+function ymd(d){ return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+function toDate(s){ var p = String(s).split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+var TODAY0 = (function(){ var d = new Date(); d.setHours(0,0,0,0); return d; })();
+var TODAY = ymd(TODAY0);
+function dayOff(n){ return ymd(new Date(TODAY0.getTime() + n * DAY_MS)); }
+function dayIndexOf(dateStr){ return Math.round((toDate(dateStr) - TODAY0) / DAY_MS); }
+function minutes(t){ var p = String(t).split(':'); return (+p[0]) * 60 + (+p[1] || 0); }
+function clamp(v,a,b){ return v < a ? a : (v > b ? b : v); }
+function fmtH(h){ return (Math.round(h * 10) / 10) + 'h'; }
+
+/* ================= 示例委托 ================= */
+function demoQuests(){
+  var raw = [
+    { id:'Q-101', off:3, dl:2, title:'迎新晚会·场务志愿者', type:'志愿', host:'校团委',
+      start:'15:00', end:'22:00', place:'东区大礼堂', zone:'东区', quota:60, enrolled:41,
+      hours:7, pu:0.3, puType:'志愿', cert:false, goods:'夜宵 + 纪念徽章',
+      interview:false, training:true, early:false, physical:true, skill:'', days:1,
+      dress:'深色长裤、运动鞋', limitWho:'',
+      note:'负责道具搬运与观众引导，22:00 统一签退，中途不得离场。' },
+    { id:'Q-102', off:1, dl:1, title:'创新创业讲坛：AI 与产业落地', type:'讲座', host:'计算机学院',
+      start:'19:00', end:'21:00', place:'西区图书馆报告厅', zone:'西区', quota:200, enrolled:168,
+      hours:0, pu:0.2, puType:'思辨', cert:false, goods:'',
+      interview:false, training:false, early:false, physical:false, skill:'', days:1,
+      dress:'', limitWho:'',
+      note:'刷卡签到 + 签退，迟到 15 分钟以上不予认定学分。' },
+    { id:'Q-103', off:4, dl:3, title:'仙林敬老院陪伴服务（第三期）', type:'志愿', host:'青年志愿者协会',
+      start:'09:00', end:'12:00', place:'市区·仙林敬老院', zone:'市区', quota:20, enrolled:18,
+      hours:3, pu:0.2, puType:'志愿', cert:true, goods:'服务证明',
+      interview:true, training:false, early:false, physical:false, skill:'', days:1,
+      dress:'', limitWho:'',
+      note:'需提前线上填表并接受一次 15 分钟面谈，往返公交单程约 45 分钟。' },
+    { id:'Q-104', off:2, dl:1, title:'校园无偿献血·现场引导', type:'志愿', host:'校红十字会',
+      start:'10:00', end:'16:00', place:'南门广场', zone:'东区', quota:30, enrolled:9,
+      hours:6, pu:0.3, puType:'志愿', cert:false, goods:'餐补给 + 献血纪念品',
+      interview:false, training:false, early:false, physical:true, skill:'', days:1,
+      dress:'', limitWho:'',
+      note:'轮班制，每 2 小时可休息 15 分钟，需长时间站立引导。' },
+    { id:'Q-105', off:3, dl:1, title:'校运动会·田径裁判助理', type:'文体', host:'校体育部',
+      start:'08:00', end:'17:00', place:'东区田径场', zone:'东区', quota:24, enrolled:22,
+      hours:9, pu:0.4, puType:'体育', cert:true, goods:'裁判助理证明 + 餐补',
+      interview:false, training:true, early:true, physical:true, skill:'', days:1,
+      dress:'运动服、运动鞋', limitWho:'',
+      note:'赛前 1 小时培训，7:30 前签到，全天在场地内跟组。' },
+    { id:'Q-106', off:1, dl:0, title:'图书馆书籍整理与导架', type:'实践', host:'校图书馆',
+      start:'14:00', end:'17:00', place:'西区图书馆三层', zone:'西区', quota:15, enrolled:6,
+      hours:3, pu:0.2, puType:'劳动', cert:false, goods:'',
+      interview:false, training:false, early:false, physical:false, skill:'', days:1,
+      dress:'', limitWho:'',
+      note:'上书、整架、贴标签，可坐着整理，强度低。' },
+    { id:'Q-107', off:2, dl:1, title:'数学建模竞赛·校内培训三讲', type:'讲座', host:'数学学院',
+      start:'18:30', end:'21:00', place:'南校区 B 楼 301', zone:'南校区', quota:80, enrolled:34,
+      hours:0, pu:0.2, puType:'思辨', cert:false, goods:'',
+      interview:false, training:false, early:false, physical:false, skill:'需连续参加三讲',
+      days:3, dress:'', limitWho:'',
+      note:'三讲全部到场才计分，缺一次不补，报名即视为承诺。' },
+    { id:'Q-108', off:1, dl:0, title:'支教助学·线上备课志愿者', type:'线上志愿', host:'研究生支教团',
+      start:'20:00', end:'22:00', place:'线上·腾讯会议', zone:'线上', quota:12, enrolled:5,
+      hours:2, pu:0.2, puType:'志愿', cert:false, goods:'',
+      interview:true, training:false, early:false, physical:false, skill:'熟悉高中数学',
+      days:1, dress:'', limitWho:'',
+      note:'每周固定两晚，需先试讲 10 分钟，通过后排班。' },
+    { id:'Q-109', off:4, dl:3, title:'校园歌手大赛决赛·检票与内场秩序', type:'文体', host:'校学生会',
+      start:'17:00', end:'22:00', place:'东区大礼堂', zone:'东区', quota:30, enrolled:27,
+      hours:5, pu:0.3, puType:'美育', cert:false, goods:'工作餐 + 决赛纪念票根',
+      interview:false, training:false, early:false, physical:true, skill:'', days:1,
+      dress:'黑色上衣（现场统一发放）', limitWho:'',
+      note:'检票、引座与散场清场，全程需站立，散场后统一离场。' },
+    { id:'Q-110', off:3, dl:2, title:'环保市集·摊位讲解志愿者', type:'志愿', host:'绿源环保社',
+      start:'09:00', end:'12:00', place:'南门广场', zone:'东区', quota:18, enrolled:7,
+      hours:3, pu:0.2, puType:'志愿', cert:false, goods:'市集代金券 20 元',
+      interview:false, training:false, early:false, physical:false, skill:'需要现场讲解垃圾分类',
+      days:1, dress:'', limitWho:'',
+      note:'摊位讲解，人多时需要喊话，社恐慎入。' },
+    { id:'Q-111', off:0, dl:0, title:'职业规划工作坊·企业导师面对面', type:'讲座', host:'就业指导中心',
+      start:'19:00', end:'20:30', place:'西区就业中心 203', zone:'西区', quota:40, enrolled:39,
+      hours:0, pu:0.2, puType:'思辨', cert:false, goods:'企业内推码',
+      interview:false, training:false, early:false, physical:false, skill:'', days:1,
+      dress:'商务休闲', limitWho:'',
+      note:'需提前上传简历，现场一对一交流名额有限，先到先得。' },
+    { id:'Q-112', off:4, dl:2, title:'校园马拉松·医疗观察员', type:'志愿', host:'后勤保障处',
+      start:'06:30', end:'10:00', place:'环校跑道·3 号补给点', zone:'南校区', quota:20, enrolled:11,
+      hours:4, pu:0.4, puType:'体育', cert:true, goods:'急救培训证明 + 早餐',
+      interview:false, training:true, early:true, physical:true, skill:'有急救证优先',
+      days:1, dress:'运动外套', limitWho:'',
+      note:'6:10 集合，补给点驻守，需搬运饮用水。' }
+  ];
+  return raw.map(function(q){
+    var o = {};
+    for (var k in q) { if (k !== 'off' && k !== 'dl') o[k] = q[k]; }
+    o.date = dayOff(q.off);
+    o.deadline = dayOff(q.dl);
+    return o;
+  });
+}
+
+function defaultState(){
+  var slots = {
+    0: { am:true,  pm:true,  ev:false },
+    1: { am:false, pm:false, ev:true  },
+    2: { am:false, pm:false, ev:true  },
+    3: { am:false, pm:true,  ev:true  },
+    4: { am:false, pm:false, ev:true  },
+    5: { am:false, pm:false, ev:true  },
+    6: { am:true,  pm:true,  ev:true  }
+  };
+  return {
+    profile: {
+      name: '同学', grade: '大二', major: '计算机科学与技术', zone: '东区',
+      limitWeekday: 4, limitWeekend: 7,
+      zones: { '东区': 8, '西区': 15, '南校区': 22, '市区': 45, '线上': 0 },
+      slots: slots,
+      need: ['志愿','体育'],
+      prefs: ['证书优先','就近优先'],
+      goal: '12 月前把志愿类学分补满，顺便拿一张服务证明',
+      pu: [
+        { k:'思辨', have:0.4, goal:1.0 },
+        { k:'志愿', have:0.3, goal:1.0 },
+        { k:'体育', have:0.1, goal:0.5 },
+        { k:'美育', have:0.3, goal:0.5 },
+        { k:'劳动', have:0.2, goal:0.5 }
+      ]
+    },
+    quests: demoQuests(),
+    accepted: { 'Q-102': { status:'accepted', at: TODAY } },
+    ui: { type:'全部', freeOnly:false, gapOnly:false, nearOnly:false, sort:'value', open:{} }
+  };
+}
+
+/* ================= 状态 ================= */
+var S = null;
+function loadState(){
+  try {
+    var raw = localStorage.getItem(STORE_KEY);
+    if (raw) {
+      var p = JSON.parse(raw);
+      if (p && p.profile && p.quests) {
+        var d = defaultState();
+        for (var k in d.profile) { if (p.profile[k] === undefined) p.profile[k] = d.profile[k]; }
+        if (!p.ui) p.ui = d.ui;
+        S = p;
+        return;
+      }
+    }
+  } catch (e) { /* 忽略损坏的本地数据 */ }
+  S = defaultState();
+}
+function save(){
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) {}
+}
+
+/* ================= 评分引擎 ================= */
+function getQuest(id){
+  for (var i = 0; i < S.quests.length; i++) { if (S.quests[i].id === id) return S.quests[i]; }
+  return null;
+}
+function weekdayOf(dateStr){ return toDate(dateStr).getDay(); }
+function dayLabel(dateStr){
+  var d = toDate(dateStr);
+  return WEEK[d.getDay()] + ' ' + (d.getMonth() + 1) + '/' + d.getDate();
+}
+function dayLimit(dateStr){
+  var w = weekdayOf(dateStr);
+  return (w === 0 || w === 6) ? S.profile.limitWeekend : S.profile.limitWeekday;
+}
+function slotOf(dateStr){ return S.profile.slots[weekdayOf(dateStr)] || {}; }
+function acceptedQuests(){
+  var out = [];
+  for (var id in S.accepted) {
+    if (S.accepted[id] && S.accepted[id].status === 'accepted') {
+      var q = getQuest(id);
+      if (q) out.push(q);
+    }
+  }
+  return out;
+}
+function doneQuests(){
+  var out = [];
+  for (var id in S.accepted) {
+    if (S.accepted[id] && S.accepted[id].status === 'done') {
+      var q = getQuest(id);
+      if (q) out.push(q);
+    }
+  }
+  return out;
+}
+function span(q){
+  var a = minutes(q.start), b = minutes(q.end);
+  if (b <= a) b += 1440;
+  return [a, b];
+}
+function findClash(q){
+  var list = acceptedQuests(), a = span(q), i, o, b;
+  for (i = 0; i < list.length; i++) {
+    o = list[i];
+    if (o.id === q.id || o.date !== q.date) continue;
+    b = span(o);
+    if (a[0] - 30 < b[1] && b[0] - 30 < a[1]) return o;
+  }
+  return null;
+}
+function slotCoverage(q){
+  var s = slotOf(q.date), a = span(q), hit = [], on = 0, i, seg;
+  for (i = 0; i < SEGS.length; i++) {
+    seg = SEGS[i];
+    if (seg.from < a[1] && seg.to > a[0]) hit.push(seg);
+  }
+  if (!hit.length) return { level:'full', segs:[] };
+  for (i = 0; i < hit.length; i++) { if (s[hit[i].key]) on++; }
+  var level = on === hit.length ? 'full' : (on === 0 ? 'none' : 'part');
+  return { level: level, segs: hit };
+}
+function limitMismatch(q){
+  var t = (q.limitWho || '').trim();
+  if (!t) return false;
+  var p = S.profile, g = p.grade || '', m = p.major || '';
+  if (t.indexOf(g) >= 0 || t.indexOf(m) >= 0) return false;
+  return true;
+}
+
+function evalQuest(q){
+  var p = S.profile;
+  var a = span(q);
+  var site = (a[1] - a[0]) / 60;
+  var days = Math.max(1, q.days || 1);
+  var travel = (p.zones && p.zones[q.zone] != null) ? +p.zones[q.zone] : 20;
+  var prep = (q.training ? 1 : 0) + (q.interview ? 0.75 : 0);
+  var costH = site * days + prep + (travel * 2) / 60;
+  var ratio = q.quota > 0 ? q.enrolled / q.quota : 0;
+  var left = Math.max(0, (q.quota || 0) - (q.enrolled || 0));
+
+  /* 难度：折算进时间成本 */
+  var D = 16;
+  if (q.interview) D += 18;
+  if (q.skill) D += 14;
+  if (q.early || a[0] < 480) D += 10;
+  if (q.physical) D += 12;
+  if (q.dress) D += 4;
+  if (days > 1) D += (days - 1) * 8;
+  if (ratio >= 0.9) D += 10;
+  if (site >= 6) D += 8;
+  D = Math.min(100, D);
+
+  /* 收益点：PU 学分按诉求加权 + 志愿时长 + 证书 / 物资 */
+  var need = p.need || [];
+  var puW = need.indexOf(q.puType) >= 0 ? 2.2 : 1.2;
+  var pts = 40 * (q.pu || 0) * puW + 6 * (q.hours || 0);
+  if (q.cert) pts += 18;
+  if (q.goods) pts += 8;
+  if ((p.prefs || []).indexOf('证书优先') >= 0 && q.cert) pts += 8;
+  if ((p.prefs || []).indexOf('就近优先') >= 0 && travel <= 12) pts += 6;
+  var V = clamp(pts * 100 / 95, 0, 100);
+
+  /* 诉求匹配 */
+  var M = 45;
+  if (need.indexOf(q.puType) >= 0) M += 13;
+  if (q.zone === p.zone) M += 10;
+  else if (q.zone === '线上') M += 8;
+  else if (q.zone === '市区') M -= 8;
+  if (limitMismatch(q)) M -= 32;
+  if ((p.prefs || []).indexOf('社交优先') >= 0 && (q.type === '文体' || q.type === '志愿')) M += 6;
+  if ((p.prefs || []).indexOf('轻松优先') >= 0 && D <= 30) M += 8;
+  M = clamp(M, 0, 100);
+
+  /* 效率：成本越低分越高，16 小时视为满分占用 */
+  var E = clamp(100 - (costH / 16) * 100, 0, 100);
+  /* 名额宽松度 */
+  var C = clamp((1 - ratio) * 100, 0, 100);
+
+  var cov = slotCoverage(q);
+  var clash = findClash(q);
+
+  var score = 0.40 * V + 0.25 * M + 0.25 * E + 0.10 * C;
+  if (clash) score *= 0.45;
+  else if (cov.level === 'none') score *= 0.62;
+  else if (cov.level === 'part') score *= 0.86;
+  score = Math.round(clamp(score, 0, 100));
+
+  var verdict;
+  if (clash) verdict = { t:'时间冲突', c:'#a63a2a' };
+  else if (score >= 75) verdict = { t:'值得抢', c:'#3f6b51' };
+  else if (score >= 60) verdict = { t:'可以一接', c:'#8a6a2c' };
+  else if (score >= 45) verdict = { t:'有空再说', c:'#6e6653' };
+  else verdict = { t:'性价比低', c:'#7d7f7a' };
+
+  /* 理由 */
+  var plus = [], minus = [], segNames = cov.segs.map(function(s){ return s.label; }).join('/');
+  if (cov.level === 'full' && segNames) plus.push('完整落在你的空档（' + dayLabel(q.date) + ' ' + segNames + '）');
+  if (cov.level === 'part') minus.push('只部分落在空档，需要挪出 ' + segNames + ' 里的预留时间');
+  if (cov.level === 'none') minus.push('与你勾选的空档完全不重合，接了就要改作息');
+  if (clash) minus.push('与已接委托「' + clash.title + '」时间重叠');
+  if (E >= 70) plus.push('总成本约 ' + fmtH(costH) + '，属于轻量单');
+  else if (costH >= 8) minus.push('总成本 ' + fmtH(costH) + '，基本吃掉整天');
+  if ((q.hours || 0) >= 5) plus.push('单次志愿时长 ' + q.hours + ' 小时，是攒时长的快车道');
+  if (need.indexOf(q.puType) >= 0) plus.push('正好补你最缺的' + q.puType + '类学分');
+  if (q.cert) plus.push('结束后有证明文件，可以直接放进综测袋');
+  if (q.goods) plus.push('附带 ' + q.goods);
+  if (ratio >= 0.9) minus.push('名额只剩 ' + left + ' 个，慢一步就没有');
+  if (left > 0 && ratio < 0.5) plus.push('还有 ' + left + ' 个名额，竞争压力小');
+  if (q.training) minus.push('需提前 1 小时培训，实际占用比公告更长');
+  if (q.early || a[0] < 480) minus.push('要求 8 点前到场，早起成本不低');
+  if (q.interview) minus.push('需要先面试或试讲，存在被刷掉的可能');
+  if (days > 1) minus.push('需连续 ' + days + ' 天到场，和其他安排很容易撞');
+  if (travel >= 35) minus.push('单程通勤约 ' + travel + ' 分钟，往返要 1 小时以上');
+  if (q.physical) minus.push('需要久站或搬抬，体力消耗已计入难度');
+  if (costH > dayLimit(q.date)) minus.push('会超过你给这一天设定的 ' + dayLimit(q.date) + ' 小时上限');
+  if (limitMismatch(q)) minus.push('参与资格写着「' + q.limitWho + '」，与你当前信息不符');
+
+  return {
+    q: q, site: site, days: days, travel: travel, prep: prep, costH: costH,
+    ratio: ratio, left: left, D: D, V: Math.round(V), M: Math.round(M),
+    E: Math.round(E), C: Math.round(C), score: score, verdict: verdict,
+    clash: clash, cov: cov, plus: plus, minus: minus
+  };
+}
+function evalAll(){ return S.quests.map(evalQuest); }
+
+/* ================= 渲染：委托板 ================= */
+function $(sel, root){ return (root || document).querySelector(sel); }
+function $$(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+  });
+}
+function scoreColor(s){ return s >= 75 ? '#3f6b51' : s >= 60 ? '#8a6a2c' : s >= 45 ? '#6e6653' : '#7d7f7a'; }
+
+function visibleList(){
+  var ui = S.ui, list = evalAll();
+  if (ui.type !== '全部') list = list.filter(function(r){ return r.q.type === ui.type; });
+  if (ui.freeOnly) list = list.filter(function(r){ return !r.clash; });
+  if (ui.gapOnly) {
+    list = list.filter(function(r){
+      var row = (S.profile.pu || []).filter(function(x){ return x.k === r.q.puType; })[0];
+      return row && row.have < row.goal;
+    });
+  }
+  if (ui.nearOnly) {
+    list = list.filter(function(r){ return r.q.zone === S.profile.zone || r.q.zone === '线上'; });
+  }
+  var by = ui.sort;
+  list.sort(function(a, b){
+    if (by === 'time') {
+      return (dayIndexOf(a.q.date) + minutes(a.q.start) / 1440) - (dayIndexOf(b.q.date) + minutes(b.q.start) / 1440);
+    }
+    if (by === 'reward') return b.V - a.V || b.score - a.score;
+    if (by === 'ease') return a.D - b.D || b.score - a.score;
+    return b.score - a.score;
+  });
+  return list;
+}
+
+function questCard(r){
+  var q = r.q;
+  var st = S.accepted[q.id];
+  var isTaken = st && st.status === 'accepted';
+  var isDone = st && st.status === 'done';
+  var cls = isTaken ? ' is-taken' : (r.clash ? ' is-conflict' : '');
+  var open = S.ui.open[q.id] ? ' is-open' : '';
+
+  var rewards = [];
+  if (q.pu > 0) rewards.push('<span class="rw pu">PU ' + q.pu.toFixed(1) + ' · ' + esc(q.puType) + '</span>');
+  if (q.hours > 0) rewards.push('<span class="rw hr">志愿 ' + q.hours + 'h</span>');
+  if (q.cert) rewards.push('<span class="rw">+ 证明文件</span>');
+  if (q.goods) rewards.push('<span class="rw">' + esc(q.goods) + '</span>');
+
+  var reqs = [];
+  if (q.interview) reqs.push('<span class="rq warn">需面试/试讲</span>');
+  if (q.training) reqs.push('<span class="rq">提前培训</span>');
+  if (q.early) reqs.push('<span class="rq warn">早起到场</span>');
+  if (q.physical) reqs.push('<span class="rq warn">久站/体力</span>');
+  if (q.skill) reqs.push('<span class="rq">' + esc(q.skill) + '</span>');
+  if (q.days > 1) reqs.push('<span class="rq warn">连续 ' + q.days + ' 天</span>');
+  if (q.dress) reqs.push('<span class="rq">' + esc(q.dress) + '</span>');
+  if (q.limitWho) reqs.push('<span class="rq">' + esc(q.limitWho) + '</span>');
+
+  var bars = [
+    ['收益', r.V], ['匹配', r.M], ['效率', r.E], ['名额', r.C]
+  ].map(function(d){
+    return '<i title="' + d[0] + ' ' + d[1] + '" style="background:linear-gradient(90deg,#8a6a2c ' + d[1] + '%,rgba(36,31,24,.14) ' + d[1] + '%)"></i>';
+  }).join('');
+
+  var why = r.plus.map(function(t){
+    return '<li class="plus"><span class="mk">+</span><span>' + esc(t) + '</span></li>';
+  }).concat(r.minus.map(function(t){
+    return '<li class="minus"><span class="mk">−</span><span>' + esc(t) + '</span></li>';
+  })).join('');
+
+  var actBtn = isDone
+    ? '<button class="q-btn taken" data-act="undo">已完成</button>'
+    : isTaken
+      ? '<button class="q-btn taken" data-act="done">标记完成</button><button class="q-btn" data-act="drop">取消</button>'
+      : '<button class="q-btn solid" data-act="take">接这一单</button>';
+
+  var stamp = isDone ? '<div class="stamp">已完成</div>'
+    : isTaken ? '<div class="stamp">已接单</div>'
+    : r.clash ? '<div class="stamp">撞车</div>' : '';
+
+  return '<article class="quest' + cls + '" data-id="' + q.id + '">'
+    + '<div class="q-head"><span class="q-type">' + esc(q.type) + '</span>'
+    + '<span class="q-no">' + esc(q.id) + ' · 剩 ' + r.left + '</span></div>'
+    + '<h3 class="q-title">' + esc(q.title) + '</h3>'
+    + '<div class="q-host">' + esc(q.host) + '　·　报名截止 ' + dayLabel(q.deadline) + '</div>'
+    + '<div class="q-meta">'
+    + '<span><i class="k">时间</i>' + dayLabel(q.date) + ' ' + q.start + '–' + q.end + (q.days > 1 ? '（连续 ' + q.days + ' 天）' : '') + '</span>'
+    + '<span><i class="k">地点</i>' + esc(q.place) + '　' + (q.zone === '线上' ? '线上' : '单程 ' + r.travel + ' 分') + '</span>'
+    + '<span><i class="k">人数</i>' + q.enrolled + ' / ' + q.quota + '</span>'
+    + '</div>'
+    + (rewards.length ? '<div class="q-rewards">' + rewards.join('') + '</div>' : '')
+    + (reqs.length ? '<div class="q-reqs">' + reqs.join('') + '</div>' : '')
+    + '<div class="q-mid"></div>'
+    + '<div class="q-foot">'
+    + '<div class="q-score"><b style="color:' + scoreColor(r.score) + '">' + r.score + '</b><span>综合分</span></div>'
+    + '<div class="q-verdict"><div class="v" style="color:' + r.verdict.c + '"><span class="dot" style="background:' + r.verdict.c + '"></span>' + r.verdict.t + '</div>'
+    + '<div class="q-bars">' + bars + '</div></div>'
+    + '<div class="q-act"><button class="q-btn" data-act="detail">评估明细</button>' + actBtn + '</div>'
+    + '</div>'
+    + '<div class="q-detail' + open + '">'
+    + (why ? '<ul class="why">' + why + '</ul>' : '')
+    + '<div class="dim-grid">'
+    + '<div class="dim"><div class="dl">收益</div><div class="dv">' + r.V + '<small>/100</small></div></div>'
+    + '<div class="dim"><div class="dl">诉求匹配</div><div class="dv">' + r.M + '<small>/100</small></div></div>'
+    + '<div class="dim"><div class="dl">成本效率</div><div class="dv">' + r.E + '<small>/100</small></div></div>'
+    + '<div class="dim"><div class="dl">名额宽松</div><div class="dv">' + r.C + '<small>/100</small></div></div>'
+    + '</div>'
+    + '<p class="data-note" style="color:#5c5443">成本拆解：现场 ' + fmtH(r.site * r.days) + ' + 往返通勤 ' + fmtH(r.travel * 2 / 60)
+    + ' + 准备 ' + fmtH(r.prep) + ' = <b>' + fmtH(r.costH) + '</b>　｜　难度指数 ' + r.D + '/100</p>'
+    + (q.note ? '<p class="data-note" style="color:#4a4334">现场提示：' + esc(q.note) + '</p>' : '')
+    + '</div>'
+    + stamp
+    + '</article>';
+}
+
+function renderBoard(){
+  var list = visibleList();
+  $('#questList').innerHTML = list.length
+    ? list.map(questCard).join('')
+    : '<div class="empty">当前筛选条件下没有委托。放宽筛选条件，或点右上角「收录新委托」录入一条。</div>';
+  renderBoardChrome();
+}
+
+function renderBoardChrome(){
+  var all = evalAll();
+  var taken = acceptedQuests().length;
+  var open = all.filter(function(r){ return !r.clash && !S.accepted[r.q.id]; }).length;
+  var good = all.filter(function(r){ return r.score >= 75 && !S.accepted[r.q.id]; }).length;
+  var urgent = all.filter(function(r){
+    return r.q.deadline === TODAY && !S.accepted[r.q.id] && !r.clash;
+  }).length;
+  $('#statOpen').textContent = open;
+  $('#statGood').textContent = good;
+  $('#statUrgent').textContent = urgent;
+  $('#tabCount').textContent = S.quests.filter(function(q){
+    return !S.accepted[q.id] || S.accepted[q.id].status === 'done';
+  }).length;
+  $('#tabTaken').textContent = taken + doneQuests().length;
+  $('#filterTypeLabel').textContent = S.ui.type === '全部' ? 'ALL' : S.ui.type;
+
+  var types = ['全部'].concat(TYPES.filter(function(t){
+    return S.quests.some(function(q){ return q.type === t; });
+  }));
+  $('#typeChips').innerHTML = types.map(function(t){
+    return '<button class="chip' + (S.ui.type === t ? ' is-on' : '') + '" data-type="' + esc(t) + '">' + esc(t) + '</button>';
+  }).join('');
+
+  $$('.filters .switch[data-toggle]').forEach(function(el){
+    var k = el.getAttribute('data-toggle');
+    el.classList.toggle('is-on', !!S.ui[k]);
+  });
+  $('#sortSel').value = S.ui.sort;
+
+  var a = toDate(TODAY), b = new Date(TODAY0.getTime() + 6 * DAY_MS);
+  $('#boardRange').textContent = (a.getMonth() + 1) + '/' + a.getDate() + ' — ' + (b.getMonth() + 1) + '/' + b.getDate();
+
+  var list = acceptedQuests();
+  var energy = 100;
+  acceptedQuests().forEach(function(q){ energy -= evalQuest(q).D * 0.15; });
+  energy = Math.round(clamp(energy, 5, 100));
+  $('#energyFill').style.width = energy + '%';
+  $('#energyNum').textContent = energy;
+  $('#btnClearPlan').textContent = taken ? '清空已接委托（' + taken + '）' : '清空已接委托';
+}
+
+/* ================= 渲染：日程 ================= */
+function segHours(k){ return k === 'pm' ? 6 : 4; }
+
+function renderPlan(){
+  var budget = $('#dayBudget');
+  var rows = [], timeline = [], i, d, key, freeH, usedH, taken, r;
+
+  for (i = 0; i < 7; i++) {
+    d = new Date(TODAY0.getTime() + i * DAY_MS);
+    var ds = ymd(d);
+    var w = d.getDay();
+    var slot = S.profile.slots[w] || {};
+    freeH = 0;
+    SEGS.forEach(function(s){ if (slot[s.key]) freeH += segHours(s.key); });
+    taken = acceptedQuests().filter(function(q){ return q.date === ds; });
+    usedH = 0;
+    taken.forEach(function(q){ var a = span(q); usedH += (a[1] - a[0]) / 60; });
+    var over = usedH > (w === 0 || w === 6 ? S.profile.limitWeekend : S.profile.limitWeekday);
+
+    rows.push('<div class="db-row">'
+      + '<span class="dn">' + WEEK[w].replace('周', '') + '</span>'
+      + '<div class="db-track"><div class="db-free" style="width:' + (freeH / 14 * 100) + '%"></div>'
+      + '<div class="db-used" style="left:' + (freeH / 14 * 100) + '%;width:' + Math.min(usedH / 14 * 100, 100 - freeH / 14 * 100) + '%"></div></div>'
+      + '<span class="dv" style="color:' + (over ? '#b05b4a' : 'var(--text-mute)') + '">' + fmtH(usedH) + '</span>'
+      + '</div>');
+
+    /* 日程 */
+    var items = taken.slice().sort(function(a, b){ return minutes(a.start) - minutes(b.start); });
+    var blocks = items.map(function(q){
+      var a = span(q);
+      var st = S.accepted[q.id];
+      var clash = findClash(q);
+      var off = a[0] < 480 || a[1] > 1320;
+      var cls = (st && st.status === 'done') ? ' is-done' : (clash || off || usedH > (w === 0 || w === 6 ? S.profile.limitWeekend : S.profile.limitWeekday) ? ' is-clash' : '');
+      return '<div class="tl-item' + cls + '"><span class="dotnode"></span>'
+        + '<div class="tm">' + q.start + '<br>' + q.end + '</div>'
+        + '<div><div class="tt">' + esc(q.title) + (st && st.status === 'done' ? '（已完成）' : '') + '</div>'
+        + '<div class="tp">' + esc(q.place) + ' · ' + esc(q.type) + ' · ' + fmtH((a[1] - a[0]) / 60)
+        + (clash ? ' · 与「' + esc(clash.title) + '」撞车' : '')
+        + (off ? ' · 超出 08:00–22:00 时段' : '') + '</div></div></div>';
+    }).join('');
+
+    if (!blocks) {
+      var segList = SEGS.filter(function(s){ return slot[s.key]; }).map(function(s){ return s.label; }).join('、');
+      blocks = '<div class="tl-empty">' + (segList ? '空档：' + segList : '这天没有预留空档') + '</div>';
+    }
+    var picks = evalAll().filter(function(r){
+      return r.q.date === ds && !S.accepted[r.q.id] && !r.clash && r.score >= 60;
+    }).sort(function(a, b){ return b.score - a.score; }).slice(0, 2);
+    var pickLine = picks.length
+      ? '<div class="tl-free">空档内的可选委托：' + picks.map(function(r){
+          return '<a href="#board" style="color:var(--copper-2)" data-jump="' + r.q.id + '">' + esc(r.q.title) + '（' + r.score + '）</a>';
+        }).join('　·　') + '</div>'
+      : '';
+
+    timeline.push('<div class="tl-day">'
+      + '<div class="tl-date"><div class="dw">' + (i === 0 ? 'TODAY' : WEEK[w]) + '</div>'
+      + '<div class="dd">' + d.getDate() + '</div>'
+      + '<div class="ds">' + (d.getMonth() + 1) + ' 月 · ' + (w === 0 || w === 6 ? '周末' : '工作日') + '</div></div>'
+      + '<div class="tl-items">' + blocks + pickLine + '</div></div>');
+  }
+
+  budget.innerHTML = rows.join('');
+  $('#timeline').innerHTML = timeline.join('');
+
+  var totalFree = 0, totalUsed = 0;
+  for (i = 0; i < 7; i++) {
+    var w2 = new Date(TODAY0.getTime() + i * DAY_MS).getDay();
+    var s2 = S.profile.slots[w2] || {};
+    SEGS.forEach(function(s){ if (s2[s.key]) totalFree += segHours(s.key); });
+  }
+  acceptedQuests().forEach(function(q){ var a = span(q); totalUsed += (a[1] - a[0]) / 60; });
+
+  $('#budgetTotal').textContent = fmtH(totalFree);
+  $('#planTaken').textContent = acceptedQuests().length;
+  $('#planEnergy').textContent = Math.round(clamp(100 - acceptedQuests().reduce(function(t, q){ return t + evalQuest(q).D * 0.15; }, 0), 5, 100));
+  $('#planHours').textContent = fmtH(doneQuests().reduce(function(t, q){ return t + (q.hours || 0); }, 0));
+  $('#planPu').textContent = (doneQuests().reduce(function(t, q){ return t + (q.pu || 0); }, 0)).toFixed(1);
+  $('#loadLabel').textContent = totalUsed > totalFree ? '超载' : 'OK';
+}
+
+/* ================= 渲染：个人档案 ================= */
+function renderProfile(){
+  var p = S.profile;
+  $('#pfName').value = p.name || '';
+  $('#pfGrade').value = p.grade || '大二';
+  $('#pfMajor').value = p.major || '';
+  $('#pfLimit').value = p.limitWeekday;
+  $('#pfLimitWeekend').value = p.limitWeekend;
+  $('#pfGoal').value = p.goal || '';
+
+  var zSel = $('#pfZone'), qSel = $('#qfZone');
+  zSel.innerHTML = ZONES.map(function(z){
+    return '<option' + (p.zone === z ? ' selected' : '') + '>' + z + '</option>';
+  }).join('');
+  qSel.innerHTML = ZONES.map(function(z){ return '<option>' + z + '</option>'; }).join('');
+
+  $('#zoneRows').innerHTML = ZONES.map(function(z){
+    var v = (p.zones && p.zones[z] != null) ? p.zones[z] : 20;
+    return '<div class="zone-row"><span>' + z + '</span>'
+      + '<input class="inp" type="number" min="0" max="180" step="1" data-zone="' + z + '" value="' + v + '">'
+      + '<span style="color:var(--text-mute);font-size:10.5px">分钟</span></div>';
+  }).join('');
+
+  /* 空档网格：周一到周日 */
+  var order = [1,2,3,4,5,6,0];
+  var html = '<div class="sg-h"></div>' + SEGS.map(function(s){
+    return '<div class="sg-h">' + s.label + '</div>';
+  }).join('');
+  order.forEach(function(w){
+    var row = p.slots[w] || {};
+    html += '<div class="sg-d">' + WEEK[w] + '</div>';
+    SEGS.forEach(function(s){
+      var on = row[s.key] ? ' is-on' : '';
+      html += '<button class="slot' + on + '" data-slot="' + w + ':' + s.key + '">' + (row[s.key] ? '空' : '×') + '</button>';
+    });
+  });
+  $('#slotGrid').innerHTML = html;
+
+  $('#needCloud').innerHTML = PU_TYPES.map(function(t){
+    return '<button class="chip' + (p.need.indexOf(t) >= 0 ? ' is-on' : '') + '" data-need="' + t + '">' + t + '</button>';
+  }).join('');
+  $('#prefCloud').innerHTML = PREFS.map(function(t){
+    return '<button class="chip' + (p.prefs.indexOf(t) >= 0 ? ' is-on' : '') + '" data-pref="' + t + '">' + t + '</button>';
+  }).join('');
+
+  $('#puEditor').innerHTML = (p.pu || []).map(function(row, i){
+    var pct = row.goal > 0 ? Math.min(100, row.have / row.goal * 100) : 0;
+    var goalPct = row.goal > 0 ? Math.min(100, 100) : 0;
+    return '<div class="pu-row"><span class="pt">' + row.k + '</span>'
+      + '<div class="pu-track"><div class="fill" style="width:' + pct + '%"></div>'
+      + '<div class="goal" style="left:' + goalPct + '%"></div></div>'
+      + '<span class="pv" style="display:flex;gap:3px;align-items:center;justify-content:flex-end">'
+      + '<input class="inp pu-in" data-pu="' + i + '" data-f="have" type="number" step="0.1" min="0" value="' + row.have + '" style="width:38px;padding:2px 4px;font-size:10.5px;text-align:center">'
+      + '<span>/</span>'
+      + '<input class="inp pu-in" data-pu="' + i + '" data-f="goal" type="number" step="0.1" min="0" value="' + row.goal + '" style="width:38px;padding:2px 4px;font-size:10.5px;text-align:center">'
+      + '</span></div>';
+  }).join('');
+}
+
+/* ================= 渲染：分析 ================= */
+var charts = {};
+function chartOf(id){
+  if (!window.echarts) return null;
+  var el = document.getElementById(id);
+  if (!el) return null;
+  if (!charts[id]) charts[id] = echarts.init(el, null, { renderer:'canvas' });
+  return charts[id];
+}
+var AXIS = {
+  axisLine:{ lineStyle:{ color:'#28332d' } },
+  axisTick:{ show:false },
+  axisLabel:{ color:'#98a29b', fontSize:10 },
+  splitLine:{ lineStyle:{ color:'#1e2823' } }
+};
+
+function renderInsight(){
+  var all = evalAll();
+  var open = all.filter(function(r){ return !S.accepted[r.q.id]; });
+  var avgCost = open.length ? open.reduce(function(t, r){ return t + r.costH; }, 0) / open.length : 0;
+  var gap = (S.profile.pu || []).reduce(function(t, x){ return t + Math.max(0, x.goal - x.have); }, 0);
+  var freeTot = 0, usedTot = 0, i, w, s, a;
+  for (i = 0; i < 7; i++) {
+    w = new Date(TODAY0.getTime() + i * DAY_MS).getDay();
+    s = S.profile.slots[w] || {};
+    SEGS.forEach(function(sg){ if (s[sg.key]) freeTot += segHours(sg.key); });
+  }
+  acceptedQuests().forEach(function(q){ a = span(q); usedTot += (a[1] - a[0]) / 60; });
+  var top = all.filter(function(r){ return r.score >= 75 }).length;
+
+  $('#kpiRow').innerHTML = [
+    ['值得抢的委托', top, '条'],
+    ['平均总成本', (Math.round(avgCost * 10) / 10), '小时'],
+    ['PU 学分缺口', (Math.round(gap * 10) / 10), '分'],
+    ['本周空档余量', (Math.round((freeTot - usedTot) * 10) / 10), '小时']
+  ].map(function(k){
+    return '<div class="kpi"><div class="k">' + k[0] + '</div><div class="v">' + k[1] + '<small>' + k[2] + '</small></div></div>';
+  }).join('');
+
+  $('#insightNote').textContent = '样本 ' + S.quests.length + ' 条 · 模型 v1';
+
+  /* 每日空档 */
+  var days = [], freeArr = [], usedArr = [];
+  for (i = 0; i < 7; i++) {
+    var d = new Date(TODAY0.getTime() + i * DAY_MS);
+    w = d.getDay();
+    days.push((i === 0 ? '今天 ' : '') + WEEK[w].replace('周', ''));
+    s = S.profile.slots[w] || {};
+    var fh = 0;
+    SEGS.forEach(function(sg){ if (s[sg.key]) fh += segHours(sg.key); });
+    freeArr.push(fh);
+    var uh = 0;
+    acceptedQuests().filter(function(q){ return q.date === ymd(d); }).forEach(function(q){
+      var sp = span(q); uh += (sp[1] - sp[0]) / 60;
+    });
+    usedArr.push(uh);
+  }
+  var c1 = chartOf('chBudget');
+  if (c1) {
+    c1.setOption({
+      grid:{ left:32, right:14, top:24, bottom:26 },
+      tooltip:{ trigger:'axis', backgroundColor:'#efe7d5', borderWidth:0, textStyle:{ color:'#241f18', fontSize:11 } },
+      legend:{ top:0, right:0, itemWidth:9, itemHeight:9, textStyle:{ color:'#98a29b', fontSize:10 } },
+      xAxis: Object.assign({ type:'category', data:days }, AXIS),
+      yAxis: Object.assign({ type:'value', name:'小时', nameTextStyle:{ color:'#67736c', fontSize:10 } }, AXIS),
+      series:[
+        { name:'空档', type:'bar', data:freeArr, barWidth:'34%', itemStyle:{ color:'rgba(205,154,61,.6)' } },
+        { name:'已占用', type:'bar', data:usedArr, barWidth:'34%', itemStyle:{ color:'#5b8a6e' } }
+      ]
+    }, true);
+  }
+
+  /* PU 缺口 */
+  var pu = S.profile.pu || [];
+  var c2 = chartOf('chPu');
+  if (c2) {
+    c2.setOption({
+      grid:{ left:12, right:34, top:22, bottom:14, containLabel:true },
+      tooltip:{ trigger:'axis', axisPointer:{ type:'shadow' }, backgroundColor:'#efe7d5', borderWidth:0, textStyle:{ color:'#241f18', fontSize:11 } },
+      legend:{ top:0, right:0, itemWidth:9, itemHeight:9, textStyle:{ color:'#98a29b', fontSize:10 } },
+      xAxis: Object.assign({ type:'value', max: function(v){ return v.max * 1.15; } }, AXIS),
+      yAxis: Object.assign({ type:'category', inverse:true, data:pu.map(function(x){ return x.k; }) }, AXIS),
+      series:[
+        { name:'目标', type:'bar', data:pu.map(function(x){ return x.goal; }), barWidth:'46%', itemStyle:{ color:'rgba(233,227,213,.16)' } },
+        { name:'已修', type:'bar', data:pu.map(function(x){ return x.have; }), barWidth:'46%', itemStyle:{ color:'#cd9a3d' } }
+      ]
+    }, true);
+  }
+
+  /* 性价比地图 */
+  var c3 = chartOf('chMap');
+  if (c3) {
+    var pts = open.map(function(r){
+      return {
+        value:[Math.round(r.costH * 10) / 10, r.V, r.score],
+        name: r.q.id + ' ' + r.q.title,
+        itemStyle:{ color: r.score >= 75 ? '#e0b45e' : r.score >= 60 ? '#7f9a89' : '#566a60' }
+      };
+    });
+    c3.setOption({
+      grid:{ left:44, right:20, top:26, bottom:34 },
+      tooltip:{
+        backgroundColor:'#efe7d5', borderWidth:0, textStyle:{ color:'#241f18', fontSize:11 },
+        formatter: function(o){
+          var v = o.data.value;
+          return '<b>' + o.data.name + '</b><br>总成本 ' + v[0] + ' 小时<br>收益 ' + v[1] + ' 点<br>综合分 ' + v[2];
+        }
+      },
+      xAxis: Object.assign({ type:'value', name:'总成本 / 小时', nameGap:22, nameTextStyle:{ color:'#67736c', fontSize:10 } }, AXIS),
+      yAxis: Object.assign({ type:'value', name:'收益 / 点', nameGap:14, nameTextStyle:{ color:'#67736c', fontSize:10 } }, AXIS),
+      series:[{
+        type:'scatter', data:pts,
+        symbolSize: function(d){ return 7 + d[2] / 7; },
+        itemStyle:{ opacity:.85, borderColor:'rgba(255,255,255,.25)', borderWidth:1 },
+        emphasis:{ scale:1.4 }
+      }]
+    }, true);
+  }
+
+  /* 榜单 */
+  var rank = all.filter(function(r){ return !S.accepted[r.q.id] && !r.clash && r.cov.level !== 'none'; })
+    .sort(function(a, b){ return b.score - a.score; }).slice(0, 5);
+  $('#rankList').innerHTML = rank.length ? rank.map(function(r, i){
+    return '<div class="rank-row"><span class="rk">' + (i + 1) + '</span>'
+      + '<span class="rt">' + esc(r.q.title) + '<small>' + dayLabel(r.q.date) + ' · ' + esc(r.q.zone) + ' · ' + fmtH(r.costH) + '</small></span>'
+      + '<span class="rv">' + r.score + '<small>分</small></span></div>';
+  }).join('') : '<div class="empty" style="padding:26px">暂无符合条件的委托</div>';
+
+  if (!window.echarts) {
+    ['chBudget','chPu','chMap'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el && !el.getAttribute('data-note')) {
+        el.setAttribute('data-note', '1');
+        el.innerHTML = '<div style="display:grid;place-items:center;height:100%;color:#67736c;font-size:12px;text-align:center;line-height:1.8">图表库未加载<br>检查网络后刷新页面</div>';
+      }
+    });
+  }
+}
+function resizeCharts(){ for (var k in charts) { if (charts[k]) charts[k].resize(); } }
+
+/* ================= 操作 ================= */
+var toastTimer = null;
+function toast(msg){
+  var t = $('#toast');
+  $('#toastText').textContent = msg;
+  t.classList.add('is-on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('is-on'); }, 2600);
+}
+function refresh(){
+  save();
+  renderBoard();
+  renderPlan();
+  renderInsight();
+  renderBoardChrome();
+}
+
+function takeQuest(id){
+  var q = getQuest(id);
+  if (!q) return;
+  if (q.enrolled >= q.quota) { toast('名额已报满，只能线下候补'); return; }
+  var r = evalQuest(q);
+  S.accepted[id] = { status:'accepted', at: TODAY };
+  q.enrolled = q.enrolled + 1;
+  save(); renderAll();
+  toast(r.clash ? '已接单，但和「' + r.clash.title + '」撞车，建议二选一' : '已接单：' + q.title);
+}
+function dropQuest(id){
+  var q = getQuest(id);
+  if (!q || !S.accepted[id]) return;
+  delete S.accepted[id];
+  q.enrolled = Math.max(0, q.enrolled - 1);
+  save(); renderAll();
+  toast('已取消：' + q.title + '，名额已释放');
+}
+function markDone(id){
+  var q = getQuest(id), st = S.accepted[id];
+  if (!q || !st) return;
+  st.status = 'done';
+  st.doneAt = TODAY;
+  if (q.pu > 0) {
+    var row = (S.profile.pu || []).filter(function(x){ return x.k === q.puType; })[0];
+    if (row) {
+      row.have = Math.round((row.have + q.pu) * 100) / 100;
+      st.applied = q.pu;
+      st.appliedType = q.puType;
+    }
+  }
+  save(); renderAll();
+  toast('已标记完成' + (q.pu > 0 ? '，' + q.pu.toFixed(1) + ' ' + q.puType + '学分已计入进度' : ''));
+}
+function undoDone(id){
+  var q = getQuest(id), st = S.accepted[id];
+  if (!q || !st || st.status !== 'done') return;
+  st.status = 'accepted';
+  delete st.doneAt;
+  if (st.applied) {
+    var row = (S.profile.pu || []).filter(function(x){ return x.k === st.appliedType; })[0];
+    if (row) row.have = Math.max(0, Math.round((row.have - st.applied) * 100) / 100);
+    delete st.applied; delete st.appliedType;
+  }
+  save(); renderAll();
+  toast('已撤销完成标记');
+}
+
+/* ================= 弹窗与录入 ================= */
+var mTab = 'single';
+function openModal(){
+  $('#modalMask').classList.add('is-on');
+  $('#qfDate').value = dayOff(1);
+  $('#qfDeadline').value = dayOff(1);
+  setTimeout(function(){ $('#qfTitle').focus(); }, 40);
+}
+function closeModal(){ $('#modalMask').classList.remove('is-on'); }
+function nextId(){
+  var max = 100;
+  S.quests.forEach(function(q){
+    var n = parseInt(String(q.id).replace(/[^0-9]/g, ''), 10);
+    if (n > max) max = n;
+  });
+  return 'Q-' + (max + 1);
+}
+function readSwitches(scope){
+  var out = {};
+  $$(scope + ' .switch[data-chk]').forEach(function(el){
+    out[el.getAttribute('data-chk')] = el.classList.contains('is-on');
+  });
+  return out;
+}
+function parseBulk(text){
+  var added = 0, skipped = 0;
+  String(text).split(/\r?\n/).forEach(function(line){
+    line = line.trim();
+    if (line.indexOf('|') < 0) { if (line) skipped++; return; }
+    var f = line.split('|').map(function(s){ return s.trim(); });
+    if (f.length < 4) { skipped++; return; }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(f[0]) || !f[3]) { skipped++; return; }
+    var reqRaw = f[13] || '';
+    S.quests.push({
+      id: nextId(), title: f[3], type: TYPES.indexOf(f[4]) >= 0 ? f[4] : '志愿', host:'',
+      date: f[0], start: f[1] || '09:00', end: f[2] || '12:00',
+      place: f[5] || '待定', zone: ZONES.indexOf(f[6]) >= 0 ? f[6] : '东区',
+      quota: parseInt(f[7], 10) || 20, enrolled: parseInt(f[8], 10) || 0,
+      hours: parseFloat(f[9]) || 0, pu: parseFloat(f[10]) || 0,
+      puType: PU_TYPES.indexOf(f[11]) >= 0 ? f[11] : '志愿',
+      cert: false, goods: f[12] || '',
+      interview: /面试|试讲/.test(reqRaw), training: /培训/.test(reqRaw),
+      early: /早起|早到/.test(reqRaw), physical: /体力|久站|搬/.test(reqRaw),
+      skill:'', days:1, dress:'', limitWho:'', deadline: f[0], note:'批量导入'
+    });
+    added++;
+  });
+  return { added: added, skipped: skipped };
+}
+function saveModal(){
+  if (mTab === 'bulk') {
+    var res = parseBulk($('#bulkText').value);
+    if (!res.added) { toast('没有解析到有效行，请检查格式', 3200); return; }
+    $('#bulkText').value = '';
+    save(); renderAll(); closeModal();
+    toast('已导入 ' + res.added + ' 条' + (res.skipped ? '，跳过 ' + res.skipped + ' 行' : ''));
+    return;
+  }
+  var title = $('#qfTitle').value.trim();
+  var date = $('#qfDate').value;
+  if (!title) { toast('先给这条委托起个标题'); return; }
+  if (!date) { toast('请选择活动日期'); return; }
+  var sw = readSwitches('#mtab-single');
+  S.quests.push({
+    id: nextId(), title: title, type: $('#qfType').value, host: $('#qfHost').value.trim(),
+    date: date, start: $('#qfStart').value || '09:00', end: $('#qfEnd').value || '12:00',
+    place: $('#qfPlace').value.trim() || '待定', zone: $('#qfZone').value,
+    quota: parseInt($('#qfQuota').value, 10) || 20,
+    enrolled: parseInt($('#qfEnrolled').value, 10) || 0,
+    hours: parseFloat($('#qfHours').value) || 0,
+    pu: parseFloat($('#qfPu').value) || 0,
+    puType: $('#qfPuType').value,
+    cert: false, goods: $('#qfGoods').value.trim(),
+    interview: !!sw.interview, training: !!sw.training, early: !!sw.early, physical: !!sw.physical,
+    skill: $('#qfSkill').value.trim(), days: parseInt($('#qfDays').value, 10) || 1,
+    dress: $('#qfDress').value.trim(), limitWho: $('#qfLimitWho').value.trim(),
+    deadline: $('#qfDeadline').value || date, note: $('#qfNote').value.trim()
+  });
+  $('#qfTitle').value = '';
+  save(); renderAll(); closeModal();
+  toast('已收录：' + title);
+}
+
+/* ================= 渲染总控 ================= */
+function renderAll(){
+  renderBoard();
+  renderPlan();
+  renderProfile();
+  renderInsight();
+  renderBoardChrome();
+}
+
+function setView(name){
+  if (['board','plan','insight','profile'].indexOf(name) < 0) name = 'board';
+  $$('.view').forEach(function(v){ v.classList.toggle('is-on', v.id === 'view-' + name); });
+  $$('.tab').forEach(function(t){ t.classList.toggle('is-on', t.getAttribute('data-nav') === name); });
+  if (name === 'insight') {
+    setTimeout(function(){
+      resizeCharts();
+      if (charts.chMap && charts.chMap.getWidth() < 10) renderInsight();
+    }, 80);
+  }
+}
+
+/* ================= 事件 ================= */
+function bind(){
+  $$('.tab').forEach(function(t){
+    t.addEventListener('click', function(){ setView(t.getAttribute('data-nav')); });
+  });
+  window.addEventListener('hashchange', function(){
+    setView((location.hash || '#board').replace('#', ''));
+  });
+  window.addEventListener('resize', function(){ resizeCharts(); });
+
+  /* 筛选 */
+  $('#typeChips').addEventListener('click', function(e){
+    var b = e.target.closest('[data-type]');
+    if (!b) return;
+    S.ui.type = b.getAttribute('data-type');
+    save(); renderBoard();
+  });
+  $$('.filters .switch[data-toggle]').forEach(function(el){
+    el.addEventListener('click', function(){
+      var k = el.getAttribute('data-toggle');
+      S.ui[k] = !S.ui[k];
+      save(); renderBoard();
+    });
+  });
+  $('#sortSel').addEventListener('change', function(){
+    S.ui.sort = this.value;
+    save(); renderBoard();
+  });
+
+  /* 委托卡 */
+  $('#questList').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-act]');
+    if (!btn) return;
+    var card = btn.closest('.quest');
+    if (!card) return;
+    var id = card.getAttribute('data-id');
+    var act = btn.getAttribute('data-act');
+    if (act === 'detail') {
+      S.ui.open[id] = !S.ui.open[id];
+      save(); renderBoard();
+    } else if (act === 'take') {
+      takeQuest(id);
+    } else if (act === 'drop') {
+      dropQuest(id);
+    } else if (act === 'done') {
+      markDone(id);
+    } else if (act === 'undo') {
+      undoDone(id);
+    }
+  });
+
+  /* 日程里的跳转 */
+  $('#timeline').addEventListener('click', function(e){
+    var a = e.target.closest('[data-jump]');
+    if (!a) return;
+    e.preventDefault();
+    var id = a.getAttribute('data-jump');
+    S.ui.type = '全部'; S.ui.open[id] = true;
+    save(); setView('board'); renderBoard(); renderBoardChrome();
+    var card = document.querySelector('.quest[data-id="' + id + '"]');
+    if (card) card.scrollIntoView({ behavior:'smooth', block:'center' });
+  });
+
+  /* 档案：基础字段 */
+  ['pfName','pfMajor','pfGoal'].forEach(function(id){
+    $('#' + id).addEventListener('change', function(){
+      S.profile[id === 'pfName' ? 'name' : id === 'pfMajor' ? 'major' : 'goal'] = this.value;
+      save();
+    });
+  });
+  $('#pfGrade').addEventListener('change', function(){
+    S.profile.grade = this.value; save(); renderProfile(); refresh();
+  });
+  $('#pfZone').addEventListener('change', function(){
+    S.profile.zone = this.value; save(); refresh();
+  });
+  $('#pfLimit').addEventListener('change', function(){
+    S.profile.limitWeekday = Math.max(0, parseFloat(this.value) || 0); save(); refresh();
+  });
+  $('#pfLimitWeekend').addEventListener('change', function(){
+    S.profile.limitWeekend = Math.max(0, parseFloat(this.value) || 0); save(); refresh();
+  });
+  $('#zoneRows').addEventListener('change', function(e){
+    var inp = e.target.closest('[data-zone]');
+    if (!inp) return;
+    S.profile.zones[inp.getAttribute('data-zone')] = Math.max(0, parseFloat(inp.value) || 0);
+    save(); refresh();
+  });
+  $('#slotGrid').addEventListener('click', function(e){
+    var b = e.target.closest('[data-slot]');
+    if (!b) return;
+    var parts = b.getAttribute('data-slot').split(':');
+    var w = +parts[0], k = parts[1];
+    if (!S.profile.slots[w]) S.profile.slots[w] = {};
+    S.profile.slots[w][k] = !S.profile.slots[w][k];
+    save(); renderProfile(); refresh();
+  });
+  $('#needCloud').addEventListener('click', function(e){
+    var b = e.target.closest('[data-need]');
+    if (!b) return;
+    var t = b.getAttribute('data-need');
+    var i = S.profile.need.indexOf(t);
+    if (i >= 0) S.profile.need.splice(i, 1);
+    else {
+      if (S.profile.need.length >= 2) { toast('最多选两个最缺的类型'); return; }
+      S.profile.need.push(t);
+    }
+    save(); renderProfile(); refresh();
+  });
+  $('#prefCloud').addEventListener('click', function(e){
+    var b = e.target.closest('[data-pref]');
+    if (!b) return;
+    var t = b.getAttribute('data-pref');
+    var i = S.profile.prefs.indexOf(t);
+    if (i >= 0) S.profile.prefs.splice(i, 1); else S.profile.prefs.push(t);
+    save(); renderProfile(); refresh();
+  });
+  $('#puEditor').addEventListener('change', function(e){
+    var inp = e.target.closest('[data-pu]');
+    if (!inp) return;
+    var i = +inp.getAttribute('data-pu');
+    var f = inp.getAttribute('data-f');
+    var v = Math.max(0, parseFloat(inp.value) || 0);
+    S.profile.pu[i][f] = v;
+    save(); renderProfile(); refresh();
+  });
+
+  /* 弹窗 */
+  $('#btnNewQuest').addEventListener('click', openModal);
+  $('#modalClose').addEventListener('click', closeModal);
+  $('#modalCancel').addEventListener('click', closeModal);
+  $('#modalSave').addEventListener('click', saveModal);
+  $('#modalMask').addEventListener('click', function(e){ if (e.target === this) closeModal(); });
+  $$('.tabs-sm button[data-mtab]').forEach(function(b){
+    b.addEventListener('click', function(){
+      mTab = b.getAttribute('data-mtab');
+      $$('.tabs-sm button[data-mtab]').forEach(function(x){ x.classList.toggle('is-on', x === b); });
+      $('#mtab-single').style.display = mTab === 'single' ? 'block' : 'none';
+      $('#mtab-bulk').style.display = mTab === 'bulk' ? 'block' : 'none';
+    });
+  });
+  $$('#mtab-single .switch[data-chk]').forEach(function(el){
+    el.addEventListener('click', function(){ el.classList.toggle('is-on'); });
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && $('#modalMask').classList.contains('is-on')) closeModal();
+  });
+
+  /* 其他操作 */
+  $('#btnClearPlan').addEventListener('click', function(){
+    if (!acceptedQuests().length) { toast('当前没有已接委托'); return; }
+    if (!window.confirm('清空所有已接委托？委托内容本身不会被删除。')) return;
+    for (var id in S.accepted) {
+      if (S.accepted[id].status === 'accepted') {
+        var q = getQuest(id);
+        if (q) q.enrolled = Math.max(0, q.enrolled - 1);
+      }
+    }
+    S.accepted = {};
+    save(); renderAll();
+    toast('已清空已接委托');
+  });
+  $('#btnExport').addEventListener('click', function(){
+    var blob = new Blob([JSON.stringify(S, null, 2)], { type:'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'quest-board-' + TODAY + '.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('已导出当前全部数据');
+  });
+  $('#btnReset').addEventListener('click', function(){
+    if (!window.confirm('恢复示例数据会覆盖你当前的档案、委托与接单记录，确定继续？')) return;
+    localStorage.removeItem(STORE_KEY);
+    loadState();
+    renderAll();
+    toast('已恢复为示例数据');
+  });
+}
+
+/* ================= 启动 ================= */
+loadState();
+bind();
+renderAll();
+setView((location.hash || '#board').replace('#', ''));
+})();
+</script>
+</body>
+</html>
